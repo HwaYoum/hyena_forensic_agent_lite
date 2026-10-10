@@ -1,8 +1,8 @@
-# Forensic Agent Lite
+# Hyena Forensic Agent Lite
 
 ![Forensic Agent Lite overview](assets/forensic_agent_lite_overview.jpg)
 
-Forensic Agent Lite is a data generation environment built to analyze how open-source LLM agents reason through a digital forensic investigation and reach their conclusions. Running on [mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent), the agent investigates the HYENA 2021 evidence data with a single bash tool and submits a report in a fixed format. Each run is saved as one trajectory (`traj.json`) containing the reasoning, command, and observation of every step, along with the final report.
+Hyena Forensic Agent Lite is a data generation environment built to analyze how open-source LLM agents reason through a digital forensic investigation and reach their conclusions. Built upon [mini-swe-agent](https://github.com/SWE-agent/mini-swe-agent), the agent investigates the HYENA 2021 evidence data with a single bash tool and submits a report in a fixed format. Each run is saved as one trajectory (`traj.json`) containing the reasoning, command, and observation of every step, along with the final report.
 
 ## Structure
 
