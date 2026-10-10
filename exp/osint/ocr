@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+"""ocr <file> [<file> ...]: show OCR (text recognition) results for images (jpg, png, etc.) and scanned PDFs.
+With several files, each result starts with a "=== path ===" header."""
+import hashlib
+import json
+import sys
+import zlib
+from pathlib import Path
+
+NONE = "No OCR result is available for this file"
+MSG = {
+    "empty": "No text recognized",
+    "unreadable": "Not readable as an image",
+    "text_layer": "This PDF has a text layer. Read it with pdftotext.",
+}
+
+if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+    sys.exit(__doc__)
+db = json.loads(zlib.decompress((Path(__file__).resolve().parent / "data/ocr.dat").read_bytes()))
+rc = 0
+for i, arg in enumerate(sys.argv[1:]):
+    if len(sys.argv) > 2:
+        print(("\n" if i else "") + f"=== {arg} ===")
+    f = Path(arg)
+    if f.is_dir() or not f.exists():
+        print(("Is a directory: " if f.is_dir() else "No such file: ") + arg, file=sys.stderr)
+        rc = 1
+        continue
+    try:
+        h = hashlib.sha1()
+        with f.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(chunk)
+    except OSError as e:
+        print(f"Cannot read: {arg} ({e.strerror})", file=sys.stderr)
+        rc = 1
+        continue
+    r = db.get(h.hexdigest())
+    print(r["t"] if r and r["s"] == "text" else MSG.get(r["s"], NONE) if r else NONE)
+sys.exit(rc)

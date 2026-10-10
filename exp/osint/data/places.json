@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Korea CC",
+    "category": "Golf course",
+    "address": "Yongin-si, Gyeonggi-do",
+    "lat": 37.2245,
+    "lon": 127.157
+  },
+  {
+    "name": "Seoul Station",
+    "category": "Train station",
+    "address": "405 Hangang-daero, Jung-gu, Seoul",
+    "lat": 37.5547,
+    "lon": 126.9707
+  },
+  {
+    "name": "Incheon International Airport Terminal 1",
+    "category": "Airport",
+    "address": "272 Gonghang-ro, Jung-gu, Incheon",
+    "lat": 37.4602,
+    "lon": 126.4407
+  },
+  {
+    "name": "Nami Island",
+    "category": "Tourist attraction",
+    "address": "Namsan-myeon, Chuncheon-si, Gangwon State",
+    "lat": 37.79,
+    "lon": 127.526
+  },
+  {
+    "name": "Gyeongpo Beach",
+    "category": "Beach",
+    "address": "Gangmun-dong, Gangneung-si, Gangwon State",
+    "lat": 37.8055,
+    "lon": 128.9087
+  },
+  {
+    "name": "Expo Science Park",
+    "category": "Park",
+    "address": "Doryong-dong, Yuseong-gu, Daejeon",
+    "lat": 36.3766,
+    "lon": 127.387
+  },
+  {
+    "name": "Jeonju Hanok Village",
+    "category": "Tourist attraction",
+    "address": "Gyo-dong, Wansan-gu, Jeonju-si, Jeonbuk State",
+    "lat": 35.815,
+    "lon": 127.153
+  },
+  {
+    "name": "Mudeungsan National Park",
+    "category": "National park",
+    "address": "Geumgok-dong, Buk-gu, Gwangju",
+    "lat": 35.134,
+    "lon": 126.989
+  },
+  {
+    "name": "Bulguksa Temple",
+    "category": "Temple",
+    "address": "385 Bulguk-ro, Gyeongju-si, Gyeongsangbuk-do",
+    "lat": 35.79,
+    "lon": 129.332
+  },
+  {
+    "name": "Haeundae Beach",
+    "category": "Beach",
+    "address": "U-dong, Haeundae-gu, Busan",
+    "lat": 35.1587,
+    "lon": 129.1604
+  },
+  {
+    "name": "Odongdo Island",
+    "category": "Tourist attraction",
+    "address": "Sujeong-dong, Yeosu-si, Jeollanam-do",
+    "lat": 34.745,
+    "lon": 127.766
+  },
+  {
+    "name": "Seongsan Ilchulbong",
+    "category": "Tourist attraction",
+    "address": "Seongsan-eup, Seogwipo-si, Jeju",
+    "lat": 33.4581,
+    "lon": 126.9425
+  }
+]

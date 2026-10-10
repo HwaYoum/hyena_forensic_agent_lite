@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+"""insta: Instagram lookup.
+  insta search <query>     search accounts (username, name, bio)
+  insta user <username>    profile and list of posts
+  insta post <post ID>     post text, likes, comments, replies
+"""
+import json
+import sys
+from pathlib import Path
+
+accounts = json.loads((Path(__file__).resolve().parent / "data/insta.json").read_text(encoding="utf-8"))["accounts"]
+if len(sys.argv) != 3 or sys.argv[1] not in ("search", "user", "post"):
+    sys.exit(__doc__)
+cmd, q = sys.argv[1], sys.argv[2]
+
+if cmd == "search":
+    hits = [a for a in accounts if q.lower() in f"{a['username']} {a['name']} {a['bio']}".lower()]
+    for a in hits:
+        print(f"@{a['username']}  {a['name']}  ({len(a['posts'])} posts, {a['followers']} followers)")
+    print(f"\n{len(hits)} accounts")
+elif cmd == "user":
+    a = next((a for a in accounts if a["username"] == q.lstrip("@")), None) or sys.exit(f"Account not found: {q}")
+    print(f"@{a['username']}  {a['name']}\n{a['bio']}\n{len(a['posts'])} posts · {a['followers']} followers · {a['following']} following\n")
+    for p in a["posts"]:
+        print(f"[{p['id']}] {p['date']}  {p['likes']} likes · {len(p['comments'])} comments  {p['caption'].splitlines()[0]}")
+else:
+    a, p = next(((a, p) for a in accounts for p in a["posts"] if p["id"] == q), (None, None))
+    p or sys.exit(f"Post not found: {q}")
+    print(f"@{a['username']} · {p['date']} · post {p['id']}\nPhoto: {p['image']}\n\n{p['caption']}\n")
+    n_replies = sum(len(c["replies"]) for c in p["comments"])
+    print(f"{p['likes']} likes · {len(p['comments'])} comments · {n_replies} replies\n")
+    for c in p["comments"]:
+        print(f"  {c['user']}: {c['text']}")
+        for r in c["replies"]:
+            print(f"    ↳ {r['user']}: {r['text']}")

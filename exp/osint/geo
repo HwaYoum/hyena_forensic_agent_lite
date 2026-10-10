@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""geo <latitude> <longitude> [count]: list places near the coordinates, nearest first."""
+import json
+import sys
+from math import asin, cos, radians, sin, sqrt
+from pathlib import Path
+
+if len(sys.argv) not in (3, 4):
+    sys.exit("Usage: geo <latitude> <longitude> [count]   e.g. geo 37.5665 126.9780")
+lat, lon = float(sys.argv[1]), float(sys.argv[2])
+n = int(sys.argv[3]) if len(sys.argv) == 4 else 5
+
+
+def km(p):
+    a = sin(radians(p["lat"] - lat) / 2) ** 2 + cos(radians(lat)) * cos(radians(p["lat"])) * sin(radians(p["lon"] - lon) / 2) ** 2
+    return 6371 * 2 * asin(sqrt(a))
+
+
+places = json.loads((Path(__file__).resolve().parent / "data/places.json").read_text(encoding="utf-8"))
+print(f"Input coordinates: {lat}, {lon}\n")
+for p in sorted(places, key=km)[:n]:
+    print(f"{km(p):8.2f} km  {p['name']} ({p['category']})\n            {p['address']}")

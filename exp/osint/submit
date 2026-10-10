@@ -1,0 +1,8 @@
+#!/bin/bash
+# submit: print the completion signal followed by /tmp/report.md (mini-swe-agent saves the text after the signal as the report)
+if [ ! -s /tmp/report.md ]; then
+    echo "Not submitted: /tmp/report.md is missing or empty. Write the final report to this file first."
+    exit 1
+fi
+echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT
+cat /tmp/report.md

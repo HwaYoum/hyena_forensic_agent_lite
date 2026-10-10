@@ -1,0 +1,5 @@
+# LF only: CRLF breaks the shell scripts and changes the task text sent to the model
+* text=auto eol=lf
+*.pdf binary
+*.jpg binary
+*.dat binary

@@ -1,0 +1,133 @@
+agent:
+  agent_class: default
+  step_limit: 200
+  cost_limit: 0
+  wall_time_limit_seconds: 5400
+  max_consecutive_format_errors: 10
+
+  system_template: |
+    You are an investigator conducting a digital forensic investigation using a Linux shell.
+
+  instance_template: |
+    # Task
+    {{task}}
+
+    # Environment
+    /case contains data from three seized PCs and is read-only. Write working files to /tmp.
+    Each command runs in a new subshell, so cd and environment variables do not persist.
+    Chain commands on one line, like `cd /case/x && ...`.
+    There is no internet connection.
+
+    # Available tools
+    - Search: rg, grep, find, file
+    - Mail: readpst (pst), pffexport, pffinfo (ost), msgconvert
+    - Spreadsheets: xlsx2csv, xls2csv (legacy xls), python3 (openpyxl, pandas)
+    - Documents: pdftotext, antiword, catdoc (doc), catppt (ppt), docx2txt, hwp5txt, python3 (python-pptx)
+    - Images: exiftool (metadata, GPS)
+    - Text recognition: `ocr <file>` - OCR results for images (jpg, png, etc.) and scanned PDFs
+    - Speech transcription: `stt <file>` - transcripts of audio files such as call recordings
+    - Archives: unzip, 7z / Encoding: iconv
+    - Location lookup: `geo <latitude> <longitude>` - places near the coordinates
+    - Instagram lookup: `insta search <query>`, `insta user <username>`, `insta post <post ID>`
+
+    For unknown files, check the type with `file` first. Do not cat binary files directly.
+    If a command's output exceeds 10,000 characters, only the first and last 5,000 characters are shown. Narrow your queries instead of dumping broadly.
+
+    # Final report format
+    After finishing the investigation, write the final report using only the format below. Do not add any preamble, closing remarks, or summary tables outside this format.
+
+    ## Conclusion
+    <one sentence>
+
+    ## Findings
+    - Finding: <one-sentence claim>
+      Evidence: `<file path>`
+    - Finding: <one-sentence claim>
+      Evidence: `<file path>`, `<file path>`
+
+    "## Conclusion" rules:
+    * It is exactly one sentence. Include the actor, the counterparty, the object, and the act in that one sentence. Do not split it across several sentences.
+    * Write names of people, companies, and documents exactly as they appear in the material.
+    * Do not attach evidence lines to the conclusion.
+
+    "## Findings" rules:
+    * One finding per item. Do not mix several claims in one item.
+    * Write each finding as one sentence, specific enough to show what was confirmed and how. Quote proper nouns, figures, dates, and file names exactly as they appear in the material.
+    * Write only facts you have confirmed. Do not write as a finding anything you could not establish, anything that is only an inference, or anything that is only a possibility.
+    * Under Evidence, list only the paths of files whose contents you actually opened and checked with a tool. Do not list files you did not open, files whose names you only saw in a listing, or paths that appeared in failed commands.
+    * Wrap each path in its own backticks and write the full path, starting with /case and including the file name. Do not use link format.
+    * For content read with `ocr` or `stt`, list the path of the original file (image, PDF, audio) passed to the tool.
+    * For content confirmed from files converted or extracted into /tmp, list the path of the original /case file they came from. Do not list /tmp paths.
+    * If there are several evidence files, list them on one line separated by commas.
+    * The same file may be cited as evidence for several findings.
+    * List only the files the finding actually relies on. Do not pad the list with unrelated files.
+
+    # Submission
+    Writing the final report as reply text does not submit it. You must write it to /tmp/report.md in one go with a command. For example:
+    ```
+    cat > /tmp/report.md <<'EOF'
+    ## Conclusion
+    ...
+    EOF
+    ```
+    Then run `submit` to submit it. If /tmp/report.md is missing or empty, nothing is submitted.
+
+environment:
+  environment_class: docker
+  image: forensics-case
+  cwd: /case
+  timeout: 120
+  run_args:
+    - "--rm"
+    - "--network"
+    - "none"
+    - "-v"
+    - "/path/to/hyena_ctf:/case:ro"   # replace /path/to/hyena_ctf with your evidence folder
+  env:
+    PAGER: cat
+    TQDM_DISABLE: '1'
+
+model:
+  model_class: litellm
+  model_name: "hosted_vllm/openai/gpt-oss-20b"   # overridden with -m
+  cost_tracking: ignore_errors
+  model_kwargs:
+    api_base: "http://127.0.0.1:8000/v1"
+    temperature: 1.0
+    reasoning_effort: high
+    tool_choice: required
+    drop_params: true
+  # Long outputs keep only the first and last 5,000 characters
+  observation_template: |
+    <returncode>{{ output.returncode }}</returncode>
+    {% if output.exception_info %}<exception>{{ output.exception_info }}</exception>
+    {% endif -%}
+    {%- if output.output | length < 10000 -%}
+    <output>
+    {{ output.output }}</output>
+    {%- else -%}
+    <warning>The output is too long. {{ output.output | length - 10000 }} characters in the middle were omitted.</warning>
+    <output_head>
+    {{ output.output[:5000] }}</output_head>
+    <output_tail>
+    {{ output.output[-5000:] }}</output_tail>
+    {%- endif %}
+  # From mini-swe-agent's mini.yaml, without the paragraph on submitting via echo (submission goes through `submit`)
+  format_error_template: |
+    {% if finish_reason is defined and (finish_reason == "length" or (finish_reason == "tool_calls" and not has_tool_calls)) -%}
+    Your previous response reached the output token limit (finish_reason={{ finish_reason }}) before you produced a tool call, so it was cut off. Respond more concisely and finish with exactly one bash tool call. If you need to think more, do so briefly.
+    {%- else -%}
+    Tool call error:
+
+    <error>
+    {{error}}
+    </error>
+
+    Here is general guidance on how to submit correct toolcalls:
+
+    Every response needs to use the 'bash' tool at least once to execute commands.
+
+    Call the bash tool with your command as the argument:
+    - Tool: bash
+    - Arguments: {"command": "your_command_here"}
+    {%- endif %}

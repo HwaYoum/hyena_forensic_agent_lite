@@ -1,0 +1,13 @@
+# Experiment results
+runs/
+*.traj.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Local
+.env
+.vscode/
+.claude/
